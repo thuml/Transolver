@@ -4,3 +4,5 @@ torch-cluster
 vtk
 timm
 einops
+seaborn
+pyvista
