@@ -55,7 +55,7 @@ Transolver proposes to **learn physical states** hidden under the unwieldy meshe
 The following visualization demonstrates that Transolver can successfully learn to ascribe the points under similar physical state to the same slice, such as windshield, license plate and headlight.
 
 <p align="center">
-<img src=".\fig\car_slice_surf.pdf" height = "300" alt="" align=center />
+<img src=".\fig\car_slice_surf.png" height = "300" alt="" align=center />
 <br><br>
 <b>Figure 2.</b> Visualization for Transolver learned physical states. 
 </p>
