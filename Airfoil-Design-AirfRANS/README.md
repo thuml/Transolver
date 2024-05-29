@@ -58,7 +58,7 @@ Note: You need to change the argument `--my_path` to your dataset path.
 Transolver achieves the consistent best performance in practical design tasks.
 
 <p align="center">
-<img src=".\fig\results.png" height = "200" alt="" align=center />
+<img src=".\fig\results.png" height = "300" alt="" align=center />
 <br><br>
 <b>Table 1.</b> Model comparisons on the practical design tasks.
 </p>
