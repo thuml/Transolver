@@ -1,0 +1,6 @@
+torch
+torch_geometric
+torch-cluster
+vtk
+timm
+einops
