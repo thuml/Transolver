@@ -98,9 +98,9 @@ def main():
     print(args)
     print(model)
     count_parameters(model)
-
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, epochs=args.epochs,
-                                                    steps_per_epoch=len(train_loader))
+    
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+    
     myloss = TestLoss(size_average=False)
 
     if eval:
@@ -174,7 +174,7 @@ def main():
                     torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
                 optimizer.step()
                 train_loss += loss.item()
-                scheduler.step()
+            scheduler.step()
 
             train_loss = train_loss / ntrain
             print("Epoch {} Train loss : {:.5f}".format(ep, train_loss))
