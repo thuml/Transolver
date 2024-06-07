@@ -1,4 +1,4 @@
-# Transolver (ICML 2024)
+# Transolver (ICML 2024 Spotlight)
 
 Transolver: A Fast Transformer Solver for PDEs on General Geometries [[paper]](https://arxiv.org/abs/2402.02366)
 
