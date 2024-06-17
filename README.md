@@ -6,7 +6,7 @@ In real-world applications, PDEs are typically discretized into large-scale mesh
 
 - Going beyond previous work, Transolver **calculates attention among learned physical states** instead of mesh points, which empowers the model with **endogenetic geometry-general capability**.
 - Transolver achieves **22% error reduction over previous SOTA in six standard benchmarks** and excels in **large-scale industrial simulations**, including car and airfoil designs.
-- Transolver presents favorable **efficiency, scalibility and out-of-distrbution generalizability**.
+- Transolver presents favorable **efficiency, scalability and out-of-distrbution generalizability**.
 
 <p align="center">
 <img src=".\pic\Transolver.png" height = "250" alt="" align=center />
