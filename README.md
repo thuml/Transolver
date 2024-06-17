@@ -19,7 +19,7 @@ In real-world applications, PDEs are typically discretized into large-scale mesh
 
 **All of the previous Transformer-based neural operators directly apply attention to mesh points.** However, the massive mesh points in practical applications will cause challenges in both computation cost and capturing physical correlations.
 
-Transolver is based on a more foundational idea, that is **learning intrinsic physical states under complex geometrics**. This design make our model free from superficial and unwieldy meshes and focus more on the physics modeling.
+Transolver is based on a more foundational idea, that is **learning intrinsic physical states under complex geometrics**. This design frees our model from superficial and unwieldy meshes and focuses more on physics modeling.
 
 As shown below, **Transolver can precisely capture miscellaneous physical states of PDEs**, such as (a) various fluid-structure interactions in a Darcy flow, (b) different extrusion regions of elastic materials, (c) shock wave and wake flow around the airfoil, (d) front-back surfaces and up-bottom spaces of driving cars.
 
@@ -42,7 +42,7 @@ As shown below, **Transolver can precisely capture miscellaneous physical states
 
 ## Results
 
-Transolver achieves the consistent state-of-the-art in **six standard benchmarks and two practical design tasks**. **More than 20 baselines are compared.**
+Transolver achieves consistent state-of-the-art in **six standard benchmarks and two practical design tasks**. **More than 20 baselines are compared.**
 
 <p align="center">
 <img src=".\PDE-Solving-StandardBenchmark\fig\standard_benchmark.png" height = "300" alt="" align=center />
