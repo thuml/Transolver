@@ -1,10 +1,9 @@
 import torch
-import numpy as np
 import torch.nn as nn
 from timm.models.layers import trunc_normal_
 from model.Embedding import timestep_embedding
-import torch.utils.checkpoint as checkpoint
-from model.Physics_Attention import Physics_Attention_3D
+import numpy as np
+from model.Physics_Attention import Physics_Attention_Irregular_Mesh
 
 ACTIVATION = {'gelu': nn.GELU, 'tanh': nn.Tanh, 'sigmoid': nn.Sigmoid, 'relu': nn.ReLU, 'leaky_relu': nn.LeakyReLU(0.1),
               'softplus': nn.Softplus, 'ELU': nn.ELU, 'silu': nn.SiLU}
@@ -51,16 +50,12 @@ class Transolver_block(nn.Module):
             last_layer=False,
             out_dim=1,
             slice_num=32,
-            H=32,
-            W=32,
-            D=32
     ):
         super().__init__()
         self.last_layer = last_layer
         self.ln_1 = nn.LayerNorm(hidden_dim)
-        self.Attn = Physics_Attention_3D(hidden_dim, heads=num_heads, dim_head=hidden_dim // num_heads,
-                                         dropout=dropout, slice_num=slice_num, H=H, W=W, D=D)
-
+        self.Attn = Physics_Attention_Irregular_Mesh(hidden_dim, heads=num_heads, dim_head=hidden_dim // num_heads,
+                                                     dropout=dropout, slice_num=slice_num)
         self.ln_2 = nn.LayerNorm(hidden_dim)
         self.mlp = MLP(hidden_dim, hidden_dim * mlp_ratio, hidden_dim, n_layers=0, res=False, act=act)
         if self.last_layer:
@@ -90,29 +85,19 @@ class Model(nn.Module):
                  out_dim=1,
                  slice_num=32,
                  ref=8,
-                 unified_pos=False,
-                 H=32,
-                 W=32,
-                 D=32,
+                 unified_pos=False
                  ):
         super(Model, self).__init__()
-        self.__name__ = 'Transolver_3D'
-        self.use_checkpoint = False
-        self.H = H
-        self.W = W
-        self.D = D
+        self.__name__ = 'Transolver_1D'
         self.ref = ref
         self.unified_pos = unified_pos
-        if self.unified_pos:
-            self.pos = self.get_grid()
-            self.preprocess = MLP(fun_dim + self.ref * self.ref * self.ref, n_hidden * 2, n_hidden, n_layers=0,
-                                  res=False, act=act)
-        else:
-            self.preprocess = MLP(fun_dim + space_dim, n_hidden * 2, n_hidden, n_layers=0, res=False, act=act)
-
         self.Time_Input = Time_Input
         self.n_hidden = n_hidden
         self.space_dim = space_dim
+        if self.unified_pos:
+            self.preprocess = MLP(fun_dim + self.ref * self.ref, n_hidden * 2, n_hidden, n_layers=0, res=False, act=act)
+        else:
+            self.preprocess = MLP(fun_dim + space_dim, n_hidden * 2, n_hidden, n_layers=0, res=False, act=act)
         if Time_Input:
             self.time_fc = nn.Sequential(nn.Linear(n_hidden, n_hidden), nn.SiLU(), nn.Linear(n_hidden, n_hidden))
 
@@ -122,9 +107,6 @@ class Model(nn.Module):
                                                       mlp_ratio=mlp_ratio,
                                                       out_dim=out_dim,
                                                       slice_num=slice_num,
-                                                      H=H,
-                                                      W=W,
-                                                      D=D,
                                                       last_layer=(_ == n_layers - 1))
                                      for _ in range(n_layers)])
         self.initialize_weights()
@@ -142,40 +124,28 @@ class Model(nn.Module):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    def get_grid(self, batchsize=1):
-        size_x, size_y, size_z = self.H, self.W, self.D
-        gridx = torch.tensor(np.linspace(0, 1, size_x), dtype=torch.float)
-        gridx = gridx.reshape(1, size_x, 1, 1, 1).repeat([batchsize, 1, size_y, size_z, 1])
-        gridy = torch.tensor(np.linspace(0, 1, size_y), dtype=torch.float)
-        gridy = gridy.reshape(1, 1, size_y, 1, 1).repeat([batchsize, size_x, 1, size_z, 1])
-        gridz = torch.tensor(np.linspace(0, 1, size_z), dtype=torch.float)
-        gridz = gridz.reshape(1, 1, 1, size_z, 1).repeat([batchsize, size_x, size_y, 1, 1])
-        grid = torch.cat((gridx, gridy, gridz), dim=-1).cuda()  # B H W D 3
-
+    def get_grid(self, x, batchsize=1):
+        # x: B N 2
+        # grid_ref
         gridx = torch.tensor(np.linspace(0, 1, self.ref), dtype=torch.float)
-        gridx = gridx.reshape(1, self.ref, 1, 1, 1).repeat([batchsize, 1, self.ref, self.ref, 1])
+        gridx = gridx.reshape(1, self.ref, 1, 1).repeat([batchsize, 1, self.ref, 1])
         gridy = torch.tensor(np.linspace(0, 1, self.ref), dtype=torch.float)
-        gridy = gridy.reshape(1, 1, self.ref, 1, 1).repeat([batchsize, self.ref, 1, self.ref, 1])
-        gridz = torch.tensor(np.linspace(0, 1, self.ref), dtype=torch.float)
-        gridz = gridz.reshape(1, 1, 1, self.ref, 1).repeat([batchsize, self.ref, self.ref, 1, 1])
-        grid_ref = torch.cat((gridx, gridy, gridz), dim=-1).cuda()  # B 4 4 4 3
+        gridy = gridy.reshape(1, 1, self.ref, 1).repeat([batchsize, self.ref, 1, 1])
+        grid_ref = torch.cat((gridx, gridy), dim=-1).cuda().reshape(batchsize, self.ref * self.ref, 2)  # B H W 8 8 2
 
-        pos = torch.sqrt(
-            torch.sum((grid[:, :, :, :, None, None, None, :] - grid_ref[:, None, None, None, :, :, :, :]) ** 2,
-                      dim=-1)). \
-            reshape(batchsize, size_x, size_y, size_z, self.ref * self.ref * self.ref).contiguous()
+        pos = torch.sqrt(torch.sum((x[:, :, None, :] - grid_ref[:, None, :, :]) ** 2, dim=-1)). \
+            reshape(batchsize, x.shape[1], self.ref * self.ref).contiguous()
         return pos
 
     def forward(self, x, fx, T=None):
         if self.unified_pos:
-            x = self.pos.repeat(x.shape[0], 1, 1, 1, 1).reshape(x.shape[0], self.H * self.W * self.D,
-                                                                self.ref * self.ref * self.ref)
+            x = self.get_grid(x, x.shape[0])
         if fx is not None:
             fx = torch.cat((x, fx), -1)
             fx = self.preprocess(fx)
         else:
             fx = self.preprocess(x)
-            fx = fx + self.placeholder[None, None, :]
+        fx = fx + self.placeholder[None, None, :]
 
         if T is not None:
             Time_emb = timestep_embedding(T, self.n_hidden).repeat(1, x.shape[1], 1)
@@ -183,9 +153,6 @@ class Model(nn.Module):
             fx = fx + Time_emb
 
         for block in self.blocks:
-            if self.use_checkpoint:
-                fx = checkpoint.checkpoint(block, fx)
-            else:
-                fx = block(fx)
+            fx = block(fx)
 
         return fx

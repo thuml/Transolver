@@ -1,6 +1,6 @@
 python exp_ns.py \
 --gpu 2 \
---model Transolver_2D \
+--model Transolver_Structured_Mesh_2D \
 --n-hidden 256 \
 --n-heads 8 \
 --n-layers 8 \

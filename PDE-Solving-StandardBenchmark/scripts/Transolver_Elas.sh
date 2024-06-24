@@ -1,6 +1,6 @@
 python exp_elas.py \
 --gpu 6 \
---model Transolver_1D \
+--model Transolver_Irregular_Mesh \
 --n-hidden 128 \
 --n-heads 8 \
 --n-layers 8 \

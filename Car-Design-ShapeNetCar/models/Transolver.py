@@ -8,7 +8,7 @@ ACTIVATION = {'gelu': nn.GELU, 'tanh': nn.Tanh, 'sigmoid': nn.Sigmoid, 'relu': n
               'softplus': nn.Softplus, 'ELU': nn.ELU, 'silu': nn.SiLU}
 
 
-class Physics_Attention_1D(nn.Module):
+class Physics_Attention_Irregular_Mesh(nn.Module):
     def __init__(self, dim, heads=8, dim_head=64, dropout=0., slice_num=64):
         super().__init__()
         inner_dim = dim_head * heads
@@ -106,8 +106,8 @@ class Transolver_block(nn.Module):
         super().__init__()
         self.last_layer = last_layer
         self.ln_1 = nn.LayerNorm(hidden_dim)
-        self.Attn = Physics_Attention_1D(hidden_dim, heads=num_heads, dim_head=hidden_dim // num_heads,
-                                         dropout=dropout, slice_num=slice_num)
+        self.Attn = Physics_Attention_Irregular_Mesh(hidden_dim, heads=num_heads, dim_head=hidden_dim // num_heads,
+                                                     dropout=dropout, slice_num=slice_num)
         self.ln_2 = nn.LayerNorm(hidden_dim)
         self.mlp = MLP(hidden_dim, hidden_dim * mlp_ratio, hidden_dim, n_layers=0, res=False, act=act)
         if self.last_layer:

@@ -3,7 +3,9 @@ import torch
 from einops import rearrange, repeat
 
 
-class Physics_Attention_1D(nn.Module):
+class Physics_Attention_Irregular_Mesh(nn.Module):
+    ## for irregular meshes in 1D, 2D or 3D space
+
     def __init__(self, dim, heads=8, dim_head=64, dropout=0., slice_num=64):
         super().__init__()
         inner_dim = dim_head * heads
@@ -56,7 +58,9 @@ class Physics_Attention_1D(nn.Module):
         return self.to_out(out_x)
 
 
-class Physics_Attention_2D(nn.Module):
+class Physics_Attention_Structured_Mesh_2D(nn.Module):
+    ## for structured mesh in 2D space
+
     def __init__(self, dim, heads=8, dim_head=64, dropout=0., slice_num=64, H=101, W=31, kernel=3):  # kernel=3):
         super().__init__()
         inner_dim = dim_head * heads
@@ -114,7 +118,9 @@ class Physics_Attention_2D(nn.Module):
         return self.to_out(out_x)
 
 
-class Physics_Attention_3D(nn.Module):
+class Physics_Attention_Structured_Mesh_3D(nn.Module):
+    ## for structured mesh in 3D space
+
     def __init__(self, dim, heads=8, dim_head=64, dropout=0., slice_num=32, H=32, W=32, D=32, kernel=3):
         super().__init__()
         inner_dim = dim_head * heads

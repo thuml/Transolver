@@ -1,6 +1,6 @@
 python exp_darcy.py \
 --gpu 4 \
---model Transolver_2D \
+--model Transolver_Structured_Mesh_2D \
 --n-hidden 128 \
 --n-heads 8 \
 --n-layers 8 \
