@@ -1,5 +1,7 @@
 # Transolver for Airfoil Design
 
+**Paper Correction:** There is a typo in our descriptions about evaluation metrics for the physics fields of volume and surface. The paper's reported results are MSE (not Relative L2), which is completely the same as the AirfRANS paper. We are sincerely sorry for this mistake.
+
 We test [Transolver](https://arxiv.org/abs/2402.02366) on practical design tasks. The airfoil design task requires the model to estimate the surrounding and surface physical quantities of a 2D airfoil under different Reynolds and angles of attacks.
 
 <p align="center">
