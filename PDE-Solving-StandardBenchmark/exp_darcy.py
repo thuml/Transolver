@@ -41,7 +41,7 @@ train_path = args.data_path + '/piececonst_r421_N1024_smooth1.mat'
 test_path = args.data_path + '/piececonst_r421_N1024_smooth2.mat'
 ntrain = args.ntrain
 ntest = 200
-epochs = 500
+epochs = args.epochs
 eval = args.eval
 save_name = args.save_name
 
