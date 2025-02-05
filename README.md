@@ -1,5 +1,7 @@
 # Transolver (ICML 2024 Spotlight)
 
+:triangular_flag_on_post:**News** (2025.01) We present an upgraded version of Transolver, named [Transolver++](https://arxiv.org/abs/2502.02414v1), which can handle million-scale geometries in one GPU with more accurate results.
+
 :triangular_flag_on_post:**News** (2024.10) Transolver has been integrated into [NVIDIA modulus](https://github.com/NVIDIA/modulus/tree/main/examples/cfd/darcy_transolver).
 
 Transolver: A Fast Transformer Solver for PDEs on General Geometries [[Paper]](https://arxiv.org/abs/2402.02366) [[Slides]](https://wuhaixu2016.github.io/pdf/ICML2024_Transolver.pdf) [[Poster]](https://wuhaixu2016.github.io/pdf/poster_ICML2024_Transolver.pdf)
