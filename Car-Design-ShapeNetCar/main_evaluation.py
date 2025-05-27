@@ -66,6 +66,8 @@ with torch.no_grad():
             std = torch.tensor(coef_norm[3]).to(device)
             pred_press = out[cfd_data.surf, -1] * std[-1] + mean[-1]
             gt_press = targets[cfd_data.surf, -1] * std[-1] + mean[-1]
+            pred_surf_velo = out[cfd_data.surf, :-1] * std[:-1] + mean[:-1]
+            gt_surf_velo = targets[cfd_data.surf, :-1] * std[:-1] + mean[:-1]
             pred_velo = out[~cfd_data.surf, :-1] * std[:-1] + mean[:-1]
             gt_velo = targets[~cfd_data.surf, :-1] * std[:-1] + mean[:-1]
             out_denorm = out * std + mean
@@ -75,9 +77,9 @@ with torch.no_grad():
         np.save('./results/' + args.cfd_model + '/' + str(index) + '_gt.npy', y_denorm.detach().cpu().numpy())
 
         pred_coef = cal_coefficient(vallst[index].split('/')[1], pred_press[:, None].detach().cpu().numpy(),
-                                    pred_velo.detach().cpu().numpy())
+                                    pred_surf_velo.detach().cpu().numpy())
         gt_coef = cal_coefficient(vallst[index].split('/')[1], gt_press[:, None].detach().cpu().numpy(),
-                                  gt_velo.detach().cpu().numpy())
+                                  gt_surf_velo.detach().cpu().numpy())
 
         gt_coef_list.append(gt_coef)
         pred_coef_list.append(pred_coef)
