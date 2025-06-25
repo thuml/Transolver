@@ -99,7 +99,7 @@ def main():
     print(model)
     count_parameters(model)
     
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
     
     myloss = TestLoss(size_average=False)
 
