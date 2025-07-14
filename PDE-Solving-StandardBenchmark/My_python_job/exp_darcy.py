@@ -4,12 +4,17 @@ import numpy as np
 import scipy.io as scio
 import torch
 import torch.nn.functional as F
+import logging
+import pprint
+import matplotlib.pyplot as plt
 from tqdm import *
-from utils.testloss import TestLoss
+from utils_Dri import setup_logger
 from einops import rearrange
 from model_dict import get_model
 from utils.normalizer import UnitTransformer
-import matplotlib.pyplot as plt
+from utils.testloss import TestLoss
+from datetime import datetime
+from colorama import Fore, Style
 
 parser = argparse.ArgumentParser('Training Translover')
 
@@ -46,10 +51,32 @@ eval = args.eval
 save_name = args.save_name
 
 def main():
+
+    # Set up logging
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    exp_name = "Tran Test"
+    log_dir = os.path.join("logs", exp_name)
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, f"pipeline_{timestamp}.log")
+    setup_logger(log_file)
+    logging.info(f"Start pressure prediction in Darcy flow")
+
     r  = args.downsample
     h  = int(((421 - 1) / r) + 1)
     s  = h
     dx = 1.0 / s
 
     train_data = scio.loadmat(train_path)
+    logging.info(f"Fore.YELLOW train_data:")
+
+#    x_train = train_data['coeff'][:ntrain, ::r, ::r][:, :s, :s]
+
+
+
+
+
+
+
+if __name__=="__main__":
+    exit(main())
 
