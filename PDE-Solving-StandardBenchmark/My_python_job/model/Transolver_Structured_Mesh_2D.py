@@ -1,3 +1,4 @@
+import pdb
 import torch
 import numpy as np
 import torch.nn as nn
@@ -170,5 +171,6 @@ class Model(nn.Module):
 
         for block in self.blocks:
             fx = block(fx)
+        pdb.set_trace()
 
         return fx
