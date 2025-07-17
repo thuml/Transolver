@@ -81,16 +81,19 @@ def main():
 
     train_data = scio.loadmat(train_path)
     x_train = train_data['coeff'][:ntrain, ::r, ::r][:, :s, :s]
-    logging.info(f"x_train.shape: {x_train.shape}")
     x_train = x_train.reshape(ntrain, -1)
     x_train = torch.from_numpy(x_train).float()
+
     y_train = train_data['sol'][:ntrain, ::r, ::r][:, :s, :s]
     y_train = y_train.reshape(ntrain, -1)
     y_train = torch.from_numpy(y_train)
 
     test_data = scio.loadmat(test_path)
+    x_test = test_data['coeff'][:ntest, ::r, ::r][:, :s, :s]
     x_test = x_test.reshape(ntest, -1)
     x_test = torch.from_numpy(x_test).float()
+
+    y_test = test_data['sol'][:ntest, ::r, ::r][:, :s, :s]
     y_test = y_test.reshape(ntest, -1)
     y_test = torch.from_numpy(y_test)
 
@@ -113,13 +116,29 @@ def main():
 
     pos_train = pos.repeat(ntrain, 1, 1)
     pos_test = pos.repeat(ntest, 1, 1)
+    logging.info(f"Dataloading is over.")
 
     train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(pos_train, x_train, y_train),
                                                batch_size=args.batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(pos_test, x_test, y_test),
                                               batch_size=args.batch_size, shuffle=False)
+    model = get_model(args)
+    logging.info(f"{Y}model type: {type(model)}{RESET}")
 
-    logging.info(f"Dataloading is over.")
+    # Initlize the model
+    model = get_model(args).Model(space_dim=2,
+                                  n_layers=args.n_layers,
+                                  n_hidden=args.n_hidden,
+                                  dropout=args.dropout,
+                                  n_head=args.n_heads,
+                                  Time_Input=False,
+                                  mlp_ratio=args.mlp_ratio,
+                                  fun_dim=1,
+                                  out_dim=1,
+                                  slice_num=args.slice_num,
+                                  ref=args.ref,
+                                  unified_pos=args.unified_pos,
+                                  H=s, W=s).cuda()
 
 
 if __name__=="__main__":
