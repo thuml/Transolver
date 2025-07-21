@@ -13,4 +13,3 @@ python exp_darcy.py \
 --eval 0 \
 --downsample 5 \
 --save_name darcy_UniPDE
-
