@@ -52,6 +52,15 @@ def parse_args():
 
 def main():
 
+    # Set up logging
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    exp_name = "Tran Test"
+    log_dir = os.path.join("logs", exp_name)
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, f"pipeline_{timestamp}.log")
+    setup_logger(log_file)
+    logging.info(f"{Fore.RED}*************************Start pressure prediction in Darcy flow.{Style.RESET_ALL}")
+
     # Set up arguments
     args = parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -63,14 +72,6 @@ def main():
     eval = args.eval
     save_name = args.save_name
 
-    # Set up logging
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    exp_name = "Tran Test"
-    log_dir = os.path.join("logs", exp_name)
-    os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, f"pipeline_{timestamp}.log")
-    setup_logger(log_file)
-    logging.info(f"{Fore.RED}*************************Start pressure prediction in Darcy flow.{Style.RESET_ALL}")
 
     # Downsampling and Setup the mesh grid
     # Prepare the train_data and test_data
@@ -122,8 +123,6 @@ def main():
                                                batch_size=args.batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(pos_test, x_test, y_test),
                                               batch_size=args.batch_size, shuffle=False)
-    model = get_model(args)
-    logging.info(f"{Y}model type: {type(model)}{RESET}")
 
     # Create the Transolver model
     model = get_model(args).Model(space_dim=2,
@@ -140,11 +139,8 @@ def main():
                                   unified_pos=args.unified_pos,
                                   H=s, W=s).cuda()
 
-    logging.info(f"{Y}Model name: {model.__name__}{RESET}")
-    logging.info(f"{Y}Model H:    {model.H}{RESET}")
-    logging.info(f"{Y}Model W:    {model.W}{RESET}")
-    logging.info(f"{Y}Model ref:  {model.ref}{RESET}")
-    logging.info(f"{Y}Model unified_pos:  {model.unified_pos}{RESET}")
+    # END
+    logging.info(f"{Fore.RED}*******************************************The train is Done.{Style.RESET_ALL}")
 
 
 if __name__=="__main__":
