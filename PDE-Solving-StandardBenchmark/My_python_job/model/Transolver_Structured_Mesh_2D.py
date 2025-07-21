@@ -53,6 +53,16 @@ class MLP(nn.Module):
 
 class Transolver_block(nn.Module):
     """Transformer encoder block."""
+#        self.blocks = nn.ModuleList([Transolver_block(num_heads=n_head, hidden_dim=n_hidden,
+#                                                      dropout=dropout,
+#                                                      act=act,
+#                                                      mlp_ratio=mlp_ratio,
+#                                                      out_dim=out_dim,
+#                                                      slice_num=slice_num,
+#                                                      H=H,
+#                                                      W=W,
+#                                                      last_layer=(_ == n_layers - 1))
+#                                     for _ in range(n_layers)])
 
     def __init__(
             self,
