@@ -139,6 +139,7 @@ def main():
                                   ref=args.ref,
                                   unified_pos=args.unified_pos,
                                   H=s, W=s).cuda()
+    logging.info(f"{Y}DONE!{RESET}")
 
 
 if __name__=="__main__":
