@@ -125,7 +125,7 @@ def main():
     model = get_model(args)
     logging.info(f"{Y}model type: {type(model)}{RESET}")
 
-    # Initlize the model
+    # Create the Transolver model
     model = get_model(args).Model(space_dim=2,
                                   n_layers=args.n_layers,
                                   n_hidden=args.n_hidden,
@@ -139,7 +139,11 @@ def main():
                                   ref=args.ref,
                                   unified_pos=args.unified_pos,
                                   H=s, W=s).cuda()
-    logging.info(f"{Y}DONE!{RESET}")
+    logging.info(f"{Y}Model name: {model.__name__}{RESET}")
+    logging.info(f"{Y}Model H:    {model.H}{RESET}")
+    logging.info(f"{Y}Model W:    {model.W}{RESET}")
+    logging.info(f"{Y}Model ref:  {model.ref}{RESET}")
+    logging.info(f"{Y}Model unified_pos:  {model.unified_pos}{RESET}")
 
 
 if __name__=="__main__":
