@@ -139,6 +139,7 @@ def main():
                                   ref=args.ref,
                                   unified_pos=args.unified_pos,
                                   H=s, W=s).cuda()
+
     logging.info(f"{Y}Model name: {model.__name__}{RESET}")
     logging.info(f"{Y}Model H:    {model.H}{RESET}")
     logging.info(f"{Y}Model W:    {model.W}{RESET}")
