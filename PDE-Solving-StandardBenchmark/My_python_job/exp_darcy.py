@@ -113,11 +113,9 @@ def main():
     x, y = np.meshgrid(x, y)
     pos = np.c_[x.ravel(), y.ravel()]
     pos = torch.tensor(pos, dtype=torch.float).unsqueeze(0)
-    logging.info(f"{G} pos.shape: {pos.shape}{RESET}")
 
     pos_train = pos.repeat(ntrain, 1, 1)
     pos_test = pos.repeat(ntest, 1, 1)
-    logging.info(f"Dataloading is over.")
 
     train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(pos_train, x_train, y_train),
                                                batch_size=args.batch_size, shuffle=True)
