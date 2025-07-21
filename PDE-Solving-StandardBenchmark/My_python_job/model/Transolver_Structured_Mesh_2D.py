@@ -7,10 +7,6 @@ from model.Physics_Attention import Physics_Attention_Structured_Mesh_2D
 from colorama import Fore, Style
 
 import logging
-import os
-from utils_Dri import setup_logger
-from datetime import datetime
-
 
 #! alias for colorful output
 R = Fore.RED
@@ -21,16 +17,8 @@ RESET = Style.RESET_ALL
 ACTIVATION = {'gelu': nn.GELU, 'tanh': nn.Tanh, 'sigmoid': nn.Sigmoid, 'relu': nn.ReLU, 'leaky_relu': nn.LeakyReLU(0.1),
               'softplus': nn.Softplus, 'ELU': nn.ELU, 'silu': nn.SiLU}
 
-# Set up logging
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-exp_name = "Tran Test"
-log_dir = os.path.join("logs", exp_name)
-os.makedirs(log_dir, exist_ok=True)
-log_file = os.path.join(log_dir, f"classFileDebug_{timestamp}.log")
-setup_logger(log_file)
-logging.info(f"{Fore.RED}*************************Start Transolver_Structured_Mesh_2D class file debugging.{Style.RESET_ALL}")
-
 class MLP(nn.Module):
+            self.preprocess = MLP(fun_dim + self.ref * self.ref, n_hidden * 2, n_hidden, n_layers=0, res=False, act=act)
     def __init__(self, n_input, n_hidden, n_output, n_layers=1, act='gelu', res=True):
         super(MLP, self).__init__()
 
@@ -46,6 +34,7 @@ class MLP(nn.Module):
         self.linear_pre = nn.Sequential(nn.Linear(n_input, n_hidden), act())
         self.linear_post = nn.Linear(n_hidden, n_output)
         self.linears = nn.ModuleList([nn.Sequential(nn.Linear(n_hidden, n_hidden), act()) for _ in range(n_layers)])
+        logging.info(f"")
 
     def forward(self, x):
         x = self.linear_pre(x)
@@ -160,15 +149,10 @@ class Model(nn.Module):
         size_x, size_y = self.H, self.W
 
         gridx = torch.tensor(np.linspace(0, 1, size_x), dtype=torch.float)
-        logging.info(f"{G} gridx.shape:  {gridx.shape}{RESET}")
         gridx = gridx.reshape(1, size_x, 1, 1).repeat([batchsize, 1, size_y, 1])
-        logging.info(f"{G} gridx.shape:  {gridx.shape}{RESET}")
-
         gridy = torch.tensor(np.linspace(0, 1, size_y), dtype=torch.float)
         gridy = gridy.reshape(1, 1, size_y, 1).repeat([batchsize, size_x, 1, 1])
         grid = torch.cat((gridx, gridy), dim=-1).cuda()  # B H W 2
-        logging.info(f"{G} grid.shape:  {gridx.shape}{RESET}")
-        logging.info(f"{G} point-wise pair:  {grid[0,10,10]}{RESET}")
 
         gridx = torch.tensor(np.linspace(0, 1, self.ref), dtype=torch.float)
         gridx = gridx.reshape(1, self.ref, 1, 1).repeat([batchsize, 1, self.ref, 1])
@@ -176,8 +160,11 @@ class Model(nn.Module):
         gridy = gridy.reshape(1, 1, self.ref, 1).repeat([batchsize, self.ref, 1, 1])
         grid_ref = torch.cat((gridx, gridy), dim=-1).cuda()  # B H W 8 8 2
 
-        pos = torch.sqrt(torch.sum((grid[:, :, :, None, None, :] - grid_ref[:, None, None, :, :, :]) ** 2, dim=-1)). \
-            reshape(batchsize, size_x, size_y, self.ref * self.ref).contiguous()
+        diff = grid[:, :, :, None, None, :] - grid_ref[:, None, None, :, :, :]
+        torch_sum = torch.sum(diff**2, dim=-1)
+        sqrt = torch.sqrt(torch_sum)
+        pos = sqrt.reshape(batchsize, size_x, size_y, self.ref * self.ref).contiguous()
+
         return pos
 
     def forward(self, x, fx, T=None):
