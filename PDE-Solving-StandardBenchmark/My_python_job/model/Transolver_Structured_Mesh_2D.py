@@ -18,7 +18,7 @@ ACTIVATION = {'gelu': nn.GELU, 'tanh': nn.Tanh, 'sigmoid': nn.Sigmoid, 'relu': n
               'softplus': nn.Softplus, 'ELU': nn.ELU, 'silu': nn.SiLU}
 
 class MLP(nn.Module):
-            self.preprocess = MLP(fun_dim + self.ref * self.ref, n_hidden * 2, n_hidden, n_layers=0, res=False, act=act)
+   #self.preprocess = MLP(fun_dim + self.ref * self.ref, n_hidden * 2, n_hidden, n_layers=0, res=False, act=act)
     def __init__(self, n_input, n_hidden, n_output, n_layers=1, act='gelu', res=True):
         super(MLP, self).__init__()
 
@@ -34,16 +34,20 @@ class MLP(nn.Module):
         self.linear_pre = nn.Sequential(nn.Linear(n_input, n_hidden), act())
         self.linear_post = nn.Linear(n_hidden, n_output)
         self.linears = nn.ModuleList([nn.Sequential(nn.Linear(n_hidden, n_hidden), act()) for _ in range(n_layers)])
-        logging.info(f"")
 
     def forward(self, x):
+        logging.info(f"{G} raw x.shape {x.shape}{RESET}")
         x = self.linear_pre(x)
+        logging.info(f"{G} Intermediate  x.shape {x.shape}{RESET}")
+
+        logging.info(f"{G}************In forwar(){RESET}")
         for i in range(self.n_layers):
             if self.res:
                 x = self.linears[i](x) + x
             else:
                 x = self.linears[i](x)
         x = self.linear_post(x)
+        logging.info(f"{G}  Output x.shape {x.shape}{RESET}")
         return x
 
 
