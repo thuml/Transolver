@@ -1,10 +1,18 @@
-import pdb
 import torch
 import numpy as np
 import torch.nn as nn
 from timm.models.layers import trunc_normal_
 from model.Embedding import timestep_embedding
 from model.Physics_Attention import Physics_Attention_Structured_Mesh_2D
+import logging
+from colorama import Fore, Style
+
+
+#! alias for colorful output
+R = Fore.RED
+Y = Fore.YELLOW
+G = Fore.GREEN
+RESET = Style.RESET_ALL
 
 ACTIVATION = {'gelu': nn.GELU, 'tanh': nn.Tanh, 'sigmoid': nn.Sigmoid, 'relu': nn.ReLU, 'leaky_relu': nn.LeakyReLU(0.1),
               'softplus': nn.Softplus, 'ELU': nn.ELU, 'silu': nn.SiLU}
@@ -155,6 +163,7 @@ class Model(nn.Module):
         return pos
 
     def forward(self, x, fx, T=None):
+        logging.info(f"{Y}***************Debug.{RESET}")
         if self.unified_pos:
             x = self.pos.repeat(x.shape[0], 1, 1, 1).reshape(x.shape[0], self.H * self.W, self.ref * self.ref)
         if fx is not None:
@@ -171,6 +180,5 @@ class Model(nn.Module):
 
         for block in self.blocks:
             fx = block(fx)
-        pdb.set_trace()
 
         return fx
