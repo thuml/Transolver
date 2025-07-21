@@ -56,13 +56,25 @@ class Model(nn.Module):
 #!-----------------------------------------------------------------------
 class MLP(nn.Module):
 
-#!-----------------------------------------------------------------------
+#!--------------------------------------------
     def __init__(self, n_input, n_hidden, n_output, n_layers=1, act='gelu', res=True):
     -> Example with n_layers
         -> Keyword argu: MLP(n_layers=0)
         -> Positional argu: MLP(0)
         -> If we use Keyword argu, the passing order can be mixed
         -> Positional argu is permitted
+
+#!---------------------
+    -> self.linear_pre = nn.Sequential(nn.Linear(n_input, n_hidden), act())
+       -> Sequential is a intermediate process between Input and Output
+       -> pipeline for neutral network
+          -> Input -> Layer1 -> Activation -> Layer2 -> ... -> Output
+
+#!---------------------
+    -> self.linears = nn.ModuleList([nn.Sequential(nn.Linear(n_hidden, n_hidden), act()) for _ in range(n_layers)])
+       -> Build a list of "n_layers"
+       -> Store the multi-stacked Sequential blocks
+
 
 
 """ Variable meaning """
