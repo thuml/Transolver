@@ -146,11 +146,16 @@ class Model(nn.Module):
 
     def get_grid(self, batchsize=1):
         size_x, size_y = self.H, self.W
+
         gridx = torch.tensor(np.linspace(0, 1, size_x), dtype=torch.float)
+        logging.info(f"{G} gridx.shape:  {gridx.shape}{RESET}")
         gridx = gridx.reshape(1, size_x, 1, 1).repeat([batchsize, 1, size_y, 1])
+        logging.info(f"{G} gridx.shape:  {gridx.shape}{RESET}")
+
         gridy = torch.tensor(np.linspace(0, 1, size_y), dtype=torch.float)
         gridy = gridy.reshape(1, 1, size_y, 1).repeat([batchsize, size_x, 1, 1])
         grid = torch.cat((gridx, gridy), dim=-1).cuda()  # B H W 2
+        logging.info(f"{G} grid.shape:  {gridx.shape}{RESET}")
 
         gridx = torch.tensor(np.linspace(0, 1, self.ref), dtype=torch.float)
         gridx = gridx.reshape(1, self.ref, 1, 1).repeat([batchsize, 1, self.ref, 1])
@@ -163,7 +168,6 @@ class Model(nn.Module):
         return pos
 
     def forward(self, x, fx, T=None):
-        logging.info(f"{Y}***************Debug.{RESET}")
         if self.unified_pos:
             x = self.pos.repeat(x.shape[0], 1, 1, 1).reshape(x.shape[0], self.H * self.W, self.ref * self.ref)
         if fx is not None:
