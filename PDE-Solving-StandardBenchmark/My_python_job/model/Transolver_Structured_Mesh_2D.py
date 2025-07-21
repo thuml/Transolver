@@ -4,8 +4,12 @@ import torch.nn as nn
 from timm.models.layers import trunc_normal_
 from model.Embedding import timestep_embedding
 from model.Physics_Attention import Physics_Attention_Structured_Mesh_2D
-import logging
 from colorama import Fore, Style
+
+import logging
+import os
+from utils_Dri import setup_logger
+from datetime import datetime
 
 
 #! alias for colorful output
@@ -17,6 +21,14 @@ RESET = Style.RESET_ALL
 ACTIVATION = {'gelu': nn.GELU, 'tanh': nn.Tanh, 'sigmoid': nn.Sigmoid, 'relu': nn.ReLU, 'leaky_relu': nn.LeakyReLU(0.1),
               'softplus': nn.Softplus, 'ELU': nn.ELU, 'silu': nn.SiLU}
 
+# Set up logging
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+exp_name = "Tran Test"
+log_dir = os.path.join("logs", exp_name)
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, f"classFileDebug_{timestamp}.log")
+setup_logger(log_file)
+logging.info(f"{Fore.RED}*************************Start Transolver_Structured_Mesh_2D class file debugging.{Style.RESET_ALL}")
 
 class MLP(nn.Module):
     def __init__(self, n_input, n_hidden, n_output, n_layers=1, act='gelu', res=True):
@@ -156,6 +168,7 @@ class Model(nn.Module):
         gridy = gridy.reshape(1, 1, size_y, 1).repeat([batchsize, size_x, 1, 1])
         grid = torch.cat((gridx, gridy), dim=-1).cuda()  # B H W 2
         logging.info(f"{G} grid.shape:  {gridx.shape}{RESET}")
+        logging.info(f"{G} point-wise pair:  {grid[0,10,10]}{RESET}")
 
         gridx = torch.tensor(np.linspace(0, 1, self.ref), dtype=torch.float)
         gridx = gridx.reshape(1, self.ref, 1, 1).repeat([batchsize, 1, self.ref, 1])
