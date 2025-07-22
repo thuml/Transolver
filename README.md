@@ -1,8 +1,10 @@
 # Transolver (ICML 2024 Spotlight)
 
+:triangular_flag_on_post:**News** (2025.07) We have released the code of [Transolver++](https://arxiv.org/abs/2502.02414v1). Please check this [GitHub Repository](https://github.com/thuml/Transolver_plus).
+
 :triangular_flag_on_post:**News** (2025.04) We have released [Neural-Solver-Library](https://github.com/thuml/Neural-Solver-Library) as a simple and neat code base for PDE solving. It contains 17 well-reproduced neural solvers. Welcome to try this library and join the research in solving PDEs.
 
-:triangular_flag_on_post:**News** (2025.02) We present an upgraded version of Transolver, named [Transolver++](https://arxiv.org/abs/2502.02414v1), which can handle million-scale geometries in one GPU with more accurate results. You can find the code [here](https://github.com/thuml/Transolver_plus).
+:triangular_flag_on_post:**News** (2025.02) We present an upgraded version of Transolver, named [Transolver++](https://arxiv.org/abs/2502.02414v1), which can handle million-scale geometries in one GPU with more accurate results.
 
 :triangular_flag_on_post:**News** (2024.10) Transolver has been integrated into [NVIDIA modulus](https://github.com/NVIDIA/modulus/tree/main/examples/cfd/darcy_transolver).
 
