@@ -77,7 +77,12 @@ class MLP(nn.Module):
 
 
 
-""" Variable meaning """
+""" variable meaning """
+# Input=fun_dim + self.ref^2          (pos + physical input)
 # fun_dim:                            number of physical features per mesh points(e.g. velocity, pressure)
 # self.ref:                           reference grid points
-# Input=fun_dim + self.ref^2          (pos + physical input)
+# num_head:
+
+""" Transolver_block() passing arguments meaning """
+# num_heads
+
