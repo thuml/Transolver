@@ -12,4 +12,5 @@ python exp_darcy.py \
 --ref 8 \
 --eval 0 \
 --downsample 5 \
+--epochs 1 \
 --save_name darcy_UniPDE
