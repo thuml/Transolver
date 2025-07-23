@@ -1,11 +1,11 @@
 #!/bin/bash
 #BSUB -J DrivAerNet_Pressure_GPU      # Job name
-#BSUB -q  4v100-16-e5      # Queue name (change if needed)
 #BSUB -n 1                            # Number of CPU cores
+#BSUB -q  4v100-16-e5  # Queue name (change if needed)
 #BSUB -R "span[ptile=1]"
 #BSUB -gpu "num=1"
-#BSUB -oo logs/out_%J.log           # Standard output (%J = job ID)
-#BSUB -eo logs/err_%J.log           # Standard error
+#BSUB -oo logs/out_%J.log             # Standard output (%J = job ID)
+#BSUB -eo logs/err_%J.log             # Standard error
 #BSUB -env "all"                      # Export your current environment
 
 # -------------------------------
