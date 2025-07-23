@@ -63,10 +63,15 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
     self.in_project_x = nn.Conv2d(dim, inner_dim, kernel, 1, kernel // 2)
     -> Each output channe is a weighted combination of local patches of input_data
     -> nn.Conv2d(in_channels=dim, out_channels=inner_dim, kernel_size=kernel, stride=1, padding=kernel // 2)
-       -> kernel_size=kernel
+       -> kernel_size
           -> This sets the size of "sliding widow" (also called filter) that the convolution uses to exrtact local feature
           -> kernel_size=3
              -> the filter looks at a 3*3 square
+          -> To a physical problem, pressure , flux, or something
+             -> The value at a point is affected by its neighbors
+             -> Example: Pressure at a point is influnced by the gradient
+                -> We need the nearby points message
+             -> So the kernel_size > 1
        -> stride
           -> It defines how far the filter moves each time it slides over the mesh
           -> stride = 1
