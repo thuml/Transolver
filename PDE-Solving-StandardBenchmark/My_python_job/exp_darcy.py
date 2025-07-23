@@ -22,6 +22,15 @@ Y = Fore.YELLOW
 G = Fore.GREEN
 RESET = Style.RESET_ALL
 
+def count_parameters(model):
+    total_params = 0
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad: continue
+        params = parameter.numel()
+        total_params += params
+    print(f"Total Trainable Params: {total_params}")
+    return total_params
+
 def parse_args():
     """ Parse command line arguments."""
     parser = argparse.ArgumentParser('Training Translover')
@@ -136,6 +145,58 @@ def main():
                                   ref=args.ref,
                                   unified_pos=args.unified_pos,
                                   H=s, W=s).cuda()
+
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+
+     #   logging.info(f"Arguments:\n" + pprint.pformat(vars(args), indent=2))
+    logging.info(f"{G} Arguments:\n{RESET}" + pprint.pformat(vars(args), indent=2) )
+    logging.info(f"{Y} model: {model} {RESET}")
+    logging.info(f"{Y} count model: {count_parameters(model)} {RESET}")
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, epochs=epochs,
+                                                    steps_per_epoch=len(train_loader))
+
+
+    myloss = TestLoss(size_average=False)
+    de_x   = TestLoss(size_average=False)
+    de_y   = TestLoss(size_average=False)
+
+    # Start training loop
+    for ep in range(args.epochs):
+        model.train()
+        train_loss = 0
+        reg = 0
+        for x, fx, y in train_loader:
+            x, fx, y = x.cuda(), fx.cuda(), y.cuda()
+            optimizer.zero_grad()
+
+            out = model(x, fx=fx.unsqueeze(-1)).squeeze(-1)  # B, N , 2, fx: B, N, y: B, N
+            out = y_normalizer.decode(out)
+            y = y_normalizer.decode(y)
+
+            l2loss = myloss(out, y)
+
+            out = rearrange(out.unsqueeze(-1), 'b (h w) c -> b c h w', h=s)
+            out = out[..., 1:-1, 1:-1].contiguous()
+            out = F.pad(out, (1, 1, 1, 1), "constant", 0)
+            out = rearrange(out, 'b c h w -> b (h w) c')
+            gt_grad_x, gt_grad_y = central_diff(y.unsqueeze(-1), dx, s)
+            pred_grad_x, pred_grad_y = central_diff(out, dx, s)
+            deriv_loss = de_x(pred_grad_x, gt_grad_x) + de_y(pred_grad_y, gt_grad_y)
+            loss = 0.1 * deriv_loss + l2loss
+            loss.backward()
+
+            if args.max_grad_norm is not None:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+            optimizer.step()
+            train_loss += l2loss.item()
+            reg += deriv_loss.item()
+            scheduler.step()
+
+        train_loss /= ntrain
+        reg /= ntrain
+
+        logging.info(f"{G} Epoch {ep} \n Reg : {reg} \n Train loss : {train_loss} {RESET}")
+        #print("Epoch {} Reg : {:.5f} Train loss : {:.5f}".format(ep, reg, train_loss))
 
     # END
     logging.info(f"{Fore.RED}*******************************************The train is Done.{Style.RESET_ALL}")
