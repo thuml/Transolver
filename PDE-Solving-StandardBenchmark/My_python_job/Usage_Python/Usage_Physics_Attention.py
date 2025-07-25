@@ -85,6 +85,71 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
           -> padding_size = kernel_size / 2
              -> It depends the kernel_size, not personal
 
+#!---------------------
+    for l in [self.in_project_slice]:
+        torch.nn.init.orthogonal_(l.weight)  # use a principled initialization
+    -> orthogonal init helps with stable gradients and training convergence
+
+#!--------------------------------------------
+    def forward(self, x):
+
+#!---------------------
+    fx_mid = self.in_project_fx(x).permute(0, 2, 3, 1).contiguous() \
+                 .reshape(B, N, self.heads, self.dim_head) \
+                 .permute(0, 2, 1, 3).contiguous()  # B H N C
+    -> [B, inner_dim, H, W] -> [B, H, W, inner_dim] -> [B, N, heads, dim_head]
+       -> N = H*W
+       -> inner_dim = heads * dim_head
+    -> The tensor operation confuses me
+
+
+#!---------------------
+    B, N, C = x.shape
+    x = x.reshape(B, self.H, self.W, C).contiguous().permute(0, 3, 1, 2).contiguous()  # B C H W
+    -> x.shape(B, self.H, self.W, C)
+       -> Convert a flat tensor into [B, N, C]
+       -> N = H * W
+    -> .contiguous()
+       -> Ensure the tensor is stored in row-major order in memory "C-style"
+       -> Necessage after .reshape() and .contiguous()
+    -> .permute(0, 3, 1, 2)
+       -> Reorder the dimensions from [B, H, W, C] to "[B, C, H, W]"
+
+
+#!--------------------------------------------
+    """ Usage situation for nn.conv2d and nn.Linear """
+#!---------------------
+    nn.Conv2d
+    -> Operates on: "4D" tensors [B, C, H, W]
+    -> Connectivity: Local, each output uses a small "receptive field"/ filter/ slice window
+    -> Weight sharing: Same filter applied across all spatial positions
+    -> Quicl Recap:
+       -> Working on local, spatially-constrained operation
+
+#!---------------------
+    nn.Linear
+    -> Opeartes on: "2D" tensors [*, in_features]
+    -> Connectivity: Global, every input neuron connects to every output neuron
+    -> Weight sharing: None, unique wrights per input-output pair
+    -> Quicl Recap:
+       -> Working on per-point vectors after spatial considerations
+       -> Working on slice tokens without spatial dimensions
+
+
+#!--------------------------------------------
+    """ Usage for __init__() and forward() """
+#!---------------------
+    __init__()
+    -> Constructor
+       -> Run once when your model instance is created
+       -> Define layers and initialize parameters here
+       -> Good for one-time setup or checks
+
+    forward()
+    -> Execution
+       -> Runs every time you pass data through the model
+       -> Defines the data flow and transformations
+       -> Good for debugging runtion behavior
 
 
 
