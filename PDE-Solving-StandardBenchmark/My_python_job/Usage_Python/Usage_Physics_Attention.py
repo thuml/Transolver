@@ -102,6 +102,18 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
     -> The tensor operation confuses me
 
 #!---------------------
+    B, N, C = x.shape
+    x = x.reshape(B, self.H, self.W, C).contiguous().permute(0, 3, 1, 2).contiguous()  # B C H W
+    -> x.shape(B, self.H, self.W, C)
+       -> Convert a flat tensor into [B, N, C]
+       -> N = H * W
+    -> .contiguous()
+       -> Ensure the tensor is stored in row-major order in memory "C-style"
+       -> Necessage after .reshape() and .contiguous()
+    -> .permute(0, 3, 1, 2)
+       -> Reorder the dimensions from [B, H, W, C] to "[B, C, H, W]"
+
+#!---------------------
     slice_weights = self.softmax(
         self.in_project_slice(x_mid) / torch.clamp(self.temperature, min=0.1, max=5))  # B H N G
     -> "logits"
@@ -119,21 +131,13 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
     -> The slice 1 value is 113
        -> 113/7225 = 0.0156
        -> On average, each point contributes 0.0156 probalility to slice 1
+
+    #!------------------------- Not sure-------------------------------
     -> The whole slice for one batech sample one head should be around 1
 
-
 #!---------------------
-    B, N, C = x.shape
-    x = x.reshape(B, self.H, self.W, C).contiguous().permute(0, 3, 1, 2).contiguous()  # B C H W
-    -> x.shape(B, self.H, self.W, C)
-       -> Convert a flat tensor into [B, N, C]
-       -> N = H * W
-    -> .contiguous()
-       -> Ensure the tensor is stored in row-major order in memory "C-style"
-       -> Necessage after .reshape() and .contiguous()
-    -> .permute(0, 3, 1, 2)
-       -> Reorder the dimensions from [B, H, W, C] to "[B, C, H, W]"
-
+    slice_token = torch.einsum("bhnc,bhng->bhgc", fx_mid, slice_weights)
+    ->
 
 #!--------------------------------------------
     """ Usage situation for nn.conv2d and nn.Linear """
