@@ -17,8 +17,7 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
 #! slice_num:                          Number of learnable slice tokens.
   -> It defines how many groups the mesh will be assigned to
   -> e.g. slice_num=64
-     -> Each mesh point is assigned to these 64 slices via softmax weights
-
+     -> Each mesh point "the whole mesh point within geomery" is assigned to these 64 slices via softmax weights
 
 #!--------------------------------------------
     def __init__(self, dim, heads=8, dim_head=64, dropout=0., slice_num=64):
@@ -94,14 +93,33 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
     def forward(self, x):
 
 #!---------------------
-"*********************** There is logic error ******************************"
     fx_mid = self.in_project_fx(x).permute(0, 2, 3, 1).contiguous() \
                  .reshape(B, N, self.heads, self.dim_head) \
                  .permute(0, 2, 1, 3).contiguous()  # B H N C
-    -> [B, inner_dim, H, W] -> [B, H, W, inner_dim] -> [B, N, heads, dim_head]
+    -> [B, inner_dim, H, W] -> [B, H, W, inner_dim] -> [B, N, heads, dim_head] -> [B, head, N, dim_head]
        -> N = H*W
        -> inner_dim = heads * dim_head
     -> The tensor operation confuses me
+
+#!---------------------
+    slice_weights = self.softmax(
+        self.in_project_slice(x_mid) / torch.clamp(self.temperature, min=0.1, max=5))  # B H N G
+    -> "logits"
+       -> Logits are the raw output scores from a neural network layer prior to applying a softmax or other normalization
+       -> After applying softmax, these logits become a "probability distribution"
+    -> torch.clamp(self.temperature, min=0.1, max=5)
+       -> Clamps each element of input tensor to lie with a specified range [min, max]
+       -> Any value below min becomes "min", any value above max becomes "max"
+       -> Example:
+          -> a = torch.tensor([-1.0, 0.2, 10.0])
+          -> torch.clamp(a, min=0.0, max=1.0)  # -> tensor([0.0, 0.2, 1.0])
+
+    slice_norm = slice_weights.sum(2)  # B H G
+    logging.info(f"{R} slice 1 value: {slice_norm[0, 1, 1]} {RESET}")
+    -> The slice 1 value is 113
+       -> 113/7225 = 0.0156
+       -> On average, each point contributes 0.0156 probalility to slice 1
+    -> The whole slice for one batech sample one head should be around 1
 
 
 #!---------------------
