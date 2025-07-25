@@ -20,6 +20,7 @@ from colorama import Fore, Style
 R = Fore.RED
 Y = Fore.YELLOW
 G = Fore.GREEN
+M = Fore.MAGENTA
 RESET = Style.RESET_ALL
 
 def count_parameters(model):
@@ -30,6 +31,19 @@ def count_parameters(model):
         total_params += params
     print(f"Total Trainable Params: {total_params}")
     return total_params
+
+
+def central_diff(x: torch.Tensor, h, resolution):
+    # assuming PBC
+    # x: (batch, n, feats), h is the step size, assuming n = h*w
+    x = rearrange(x, 'b (h w) c -> b h w c', h=resolution, w=resolution)
+    x = F.pad(x,
+              (0, 0, 1, 1, 1, 1), mode='constant', value=0.)  # [b c t h+2 w+2]
+    grad_x = (x[:, 1:-1, 2:, :] - x[:, 1:-1, :-2, :]) / (2 * h)  # f(x+h) - f(x-h) / 2h
+    grad_y = (x[:, 2:, 1:-1, :] - x[:, :-2, 1:-1, :]) / (2 * h)  # f(x+h) - f(x-h) / 2h
+
+    return grad_x, grad_y
+
 
 def parse_args():
     """ Parse command line arguments."""
@@ -148,10 +162,8 @@ def main():
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
-     #   logging.info(f"Arguments:\n" + pprint.pformat(vars(args), indent=2))
     logging.info(f"{G} Arguments:\n{RESET}" + pprint.pformat(vars(args), indent=2) )
-    logging.info(f"{Y} model: {model} {RESET}")
-    logging.info(f"{Y} count model: {count_parameters(model)} {RESET}")
+#    logging.info(f"{Y} model: {model} {RESET}")
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, epochs=epochs,
                                                     steps_per_epoch=len(train_loader))
 
@@ -165,7 +177,7 @@ def main():
         model.train()
         train_loss = 0
         reg = 0
-        for x, fx, y in train_loader:
+        for x, fx, y in tqdm(train_loader, desc="[Training]"):
             x, fx, y = x.cuda(), fx.cuda(), y.cuda()
             optimizer.zero_grad()
 
@@ -195,8 +207,7 @@ def main():
         train_loss /= ntrain
         reg /= ntrain
 
-        logging.info(f"{G} Epoch {ep} \n Reg : {reg} \n Train loss : {train_loss} {RESET}")
-        #print("Epoch {} Reg : {:.5f} Train loss : {:.5f}".format(ep, reg, train_loss))
+        logging.info(f"{M} Epoch {ep}  Reg : {reg}  Train loss : {train_loss} {RESET}")
 
     # END
     logging.info(f"{Fore.RED}*******************************************The train is Done.{Style.RESET_ALL}")
