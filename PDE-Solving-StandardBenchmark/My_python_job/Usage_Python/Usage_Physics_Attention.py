@@ -94,6 +94,7 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
     def forward(self, x):
 
 #!---------------------
+"*********************** There is logic error ******************************"
     fx_mid = self.in_project_fx(x).permute(0, 2, 3, 1).contiguous() \
                  .reshape(B, N, self.heads, self.dim_head) \
                  .permute(0, 2, 1, 3).contiguous()  # B H N C
