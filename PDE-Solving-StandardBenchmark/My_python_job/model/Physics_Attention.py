@@ -1,7 +1,16 @@
 import torch.nn as nn
 import torch
 from einops import rearrange, repeat
+import logging
+from colorama import Fore, Style
 
+#! alias for colorful output
+R = Fore.RED
+Y = Fore.YELLOW
+G = Fore.GREEN
+M = Fore.MAGENTA
+C = Fore.CYAN
+RESET = Style.RESET_ALL
 
 class Physics_Attention_Irregular_Mesh(nn.Module):
     ## for irregular meshes in 1D, 2D or 3D space
@@ -60,8 +69,10 @@ class Physics_Attention_Irregular_Mesh(nn.Module):
 class Physics_Attention_Structured_Mesh_2D(nn.Module):
     ## for structured mesh in 2D space
     def __init__(self, dim, heads=8, dim_head=64, dropout=0., slice_num=64, H=101, W=31, kernel=3):  # kernel=3):
+        logging.info(f"{C}****************** In Physics_Attention_Structured_Mesh_2D() class.{RESET}")
         super().__init__()
         inner_dim = dim_head * heads
+        self.dim = dim
         self.dim_head = dim_head
         self.heads = heads
         self.scale = dim_head ** -0.5
@@ -70,6 +81,12 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
         self.temperature = nn.Parameter(torch.ones([1, heads, 1, 1]) * 0.5)
         self.H = H
         self.W = W
+        logging.info(f"{Y} self.dim: {self.dim}")
+        logging.info(f"{Y} self.dim_head: {self.dim_head}")
+        logging.info(f"{Y} self.heads: {self.heads}")
+        logging.info(f"{Y} self.H: {self.H}")
+        logging.info(f"{Y} self.W: {self.W}{RESET}")
+        logging.info(f"{Y} self.slice_num: {slice_num}{RESET}")
 
         self.in_project_x = nn.Conv2d(dim, inner_dim, kernel, 1, kernel // 2)
         self.in_project_fx = nn.Conv2d(dim, inner_dim, kernel, 1, kernel // 2)
@@ -90,11 +107,17 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
         B, N, C = x.shape
         x = x.reshape(B, self.H, self.W, C).contiguous().permute(0, 3, 1, 2).contiguous()  # B C H W
 
+
+        #self.in_project_slice = nn.Linear(dim_head, slice_num)
         ### (1) Slice
-        fx_mid = self.in_project_fx(x).permute(0, 2, 3, 1).contiguous().reshape(B, N, self.heads, self.dim_head) \
-            .permute(0, 2, 1, 3).contiguous()  # B H N C
-        x_mid = self.in_project_x(x).permute(0, 2, 3, 1).contiguous().reshape(B, N, self.heads, self.dim_head) \
-            .permute(0, 2, 1, 3).contiguous()  # B H N G
+        fx_mid = self.in_project_fx(x).permute(0, 2, 3, 1).contiguous() \
+                     .reshape(B, N, self.heads, self.dim_head) \
+                     .permute(0, 2, 1, 3).contiguous()  # B H N C
+        logging.info(f"{Y} fx_mid.shape {fx_mid.shape}")
+        x_mid = self.in_project_x(x).permute(0, 2, 3, 1).contiguous() \
+                    .reshape(B, N, self.heads, self.dim_head) \
+                    .permute(0, 2, 1, 3).contiguous()  # B H N G
+        logging.info(f"{Y} x_mid.shape {x_mid.shape}")
         slice_weights = self.softmax(
             self.in_project_slice(x_mid) / torch.clamp(self.temperature, min=0.1, max=5))  # B H N G
         slice_norm = slice_weights.sum(2)  # B H G
