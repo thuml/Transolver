@@ -12,6 +12,8 @@ import logging
 R = Fore.RED
 Y = Fore.YELLOW
 G = Fore.GREEN
+M = Fore.MAGENTA
+C = Fore.CYAN
 RESET = Style.RESET_ALL
 
 ACTIVATION = {'gelu': nn.GELU, 'tanh': nn.Tanh, 'sigmoid': nn.Sigmoid, 'relu': nn.ReLU, 'leaky_relu': nn.LeakyReLU(0.1),
@@ -22,6 +24,7 @@ class MLP(nn.Module):
     def __init__(self, n_input, n_hidden, n_output, n_layers=1, act='gelu', res=True):
         super(MLP, self).__init__()
 
+        logging.info(f"{C}****************** In MLP() class.{RESET}")
         if act in ACTIVATION.keys():
             act = ACTIVATION[act]
         else:
@@ -36,23 +39,23 @@ class MLP(nn.Module):
         self.linears = nn.ModuleList([nn.Sequential(nn.Linear(n_hidden, n_hidden), act()) for _ in range(n_layers)])
 
     def forward(self, x):
-        logging.info(f"{G} raw x.shape {x.shape}{RESET}")
+      #  logging.info(f"{G} raw x.shape {x.shape}{RESET}")
         x = self.linear_pre(x)
-        logging.info(f"{G} Intermediate  x.shape {x.shape}{RESET}")
+      #  logging.info(f"{G} Intermediate  x.shape {x.shape}{RESET}")
 
-        logging.info(f"{G}************In forwar(){RESET}")
+      #  logging.info(f"{G}************In forwar(){RESET}")
         for i in range(self.n_layers):
             if self.res:
                 x = self.linears[i](x) + x
             else:
                 x = self.linears[i](x)
         x = self.linear_post(x)
-        logging.info(f"{G}  Output x.shape {x.shape}{RESET}")
+      #  logging.info(f"{G}  Output x.shape {x.shape}{RESET}")
         return x
 
 
 class Transolver_block(nn.Module):
-    """Transformer encoder block."""
+    """ Transformer encoder block. """
 #        self.blocks = nn.ModuleList([Transolver_block(num_heads=n_head, hidden_dim=n_hidden,
 #                                                      dropout=dropout,
 #                                                      act=act,
@@ -77,6 +80,8 @@ class Transolver_block(nn.Module):
             H=85,
             W=85
     ):
+
+        logging.info(f"{C}****************** In Transolver_block() class.{RESET}")
         super().__init__()
         self.last_layer = last_layer
         self.ln_1 = nn.LayerNorm(hidden_dim)
@@ -122,6 +127,8 @@ class Model(nn.Module):
         self.W = W
         self.ref = ref
         self.unified_pos = unified_pos
+        logging.info(f"{C}****************** In Model() class.{RESET}")
+
         if self.unified_pos:
             self.pos = self.get_grid()
             self.preprocess = MLP(fun_dim + self.ref * self.ref, n_hidden * 2, n_hidden, n_layers=0, res=False, act=act)
@@ -182,6 +189,7 @@ class Model(nn.Module):
         return pos
 
     def forward(self, x, fx, T=None):
+        logging.info(f"{Y} Initial input x.shape: {x.shape} {RESET}")
         if self.unified_pos:
             x = self.pos.repeat(x.shape[0], 1, 1, 1).reshape(x.shape[0], self.H * self.W, self.ref * self.ref)
         if fx is not None:
