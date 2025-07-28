@@ -21,6 +21,7 @@ R = Fore.RED
 Y = Fore.YELLOW
 G = Fore.GREEN
 M = Fore.MAGENTA
+C = Fore.CYAN
 RESET = Style.RESET_ALL
 
 def count_parameters(model):
@@ -104,6 +105,7 @@ def main():
     dx = 1.0 / s
 
     train_data = scio.loadmat(train_path)
+
     x_train = train_data['coeff'][:ntrain, ::r, ::r][:, :s, :s]
     x_train = x_train.reshape(ntrain, -1)
     x_train = torch.from_numpy(x_train).float()
@@ -140,6 +142,10 @@ def main():
     pos_train = pos.repeat(ntrain, 1, 1)
     pos_test = pos.repeat(ntest, 1, 1)
 
+
+    # pos_train.shape = [1000, 7225, 2]
+    # x_train.shape   = [1000, 7225]
+    # y_train.shape   = [1000, 7225]
     train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(pos_train, x_train, y_train),
                                                batch_size=args.batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(pos_test, x_test, y_test),
@@ -163,7 +169,6 @@ def main():
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
     logging.info(f"{G} Arguments:\n{RESET}" + pprint.pformat(vars(args), indent=2) )
-#    logging.info(f"{Y} model: {model} {RESET}")
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, epochs=epochs,
                                                     steps_per_epoch=len(train_loader))
 
