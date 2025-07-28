@@ -52,9 +52,42 @@ class Model(nn.Module):
            -> ref_idx = ii * self.ref + jj
            -> {B, aa, bb, ref_idx}
 
+#!--------------------------------------------
+    def forward(self, x, fx, T=None):
+
+#!---------------------
+    if self.unified_pos:
+        x = self.pos.repeat(x.shape[0], 1, 1, 1).reshape(x.shape[0], self.H * self.W, self.ref * self.ref)
+    -> This snippet generates a unified mesh grid to overwrite the previous loaded in "exp_darcy.py"
+
+#!---------------------
+    fx = torch.cat((x, fx), -1)
+    -> Concatenates along the last dimension
+       -> x.shape = [B, N, 64], fx.shape = [B, N, 1]
+       -> fx.shape = [B, N, 65]
+    -> Example:
+       -> fx[0, 0, 0]
+          -> At batch 0, the distance between mesh grid "0" and reference point "0"
+       -> fx[0, 0, 64]
+          -> At batch 0, the pressure value at mesh grid point "0"
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #!-----------------------------------------------------------------------
 class MLP(nn.Module):
+    -> There exists pre and post for act()
+    -> MLP is not a linear neural network
 
 #!--------------------------------------------
     def __init__(self, n_input, n_hidden, n_output, n_layers=1, act='gelu', res=True):
