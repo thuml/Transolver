@@ -131,15 +131,15 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
         attn = self.softmax(dots)
         attn = self.dropout(attn)
         out_slice_token = torch.matmul(attn, v_slice_token)  # B H G D
-        logging.info(f"{Y} out_slice_token.shape: {out_slice_token.shape} {RESET}")
-        logging.info(f"{Y} slice_weights.shape: {slice_weights.shape} {RESET}")
+        #logging.info(f"{Y} out_slice_token.shape: {out_slice_token.shape} {RESET}")
+        #logging.info(f"{Y} slice_weights.shape: {slice_weights.shape} {RESET}")
 
 
         ### (3) Deslice
         out_x = torch.einsum("bhgc,bhng->bhnc", out_slice_token, slice_weights)
-        logging.info(f"{Y} out_x.shape: {out_x.shape} {RESET}")
+        #logging.info(f"{Y} out_x.shape: {out_x.shape} {RESET}")
         out_x = rearrange(out_x, 'b h n d -> b n (h d)')
-        logging.info(f"{Y} out_x.shape: {out_x.shape} {RESET}")
+        #logging.info(f"{Y} out_x.shape: {out_x.shape} {RESET}")
         return self.to_out(out_x)
 
 
