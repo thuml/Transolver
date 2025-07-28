@@ -12,6 +12,7 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
 #! heads:                              Number of attention heads.
   -> The model splits the intermediate features into multiple independent subspaces.
   -> Each head capture different types.
+  -> Each head analyzing the same physical field, parallel, but focus on different aspects
 #! dim_head:                           Size of subspace each slice token projected.
 #! inner_dim:                          Total featrue dimension after projecting input data for attention
 #! slice_num:                          Number of learnable slice tokens.
@@ -113,7 +114,7 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
     -> .permute(0, 3, 1, 2)
        -> Reorder the dimensions from [B, H, W, C] to "[B, C, H, W]"
 
-#!---------------------
+#!--------------------- ###(1) Slice
     slice_weights = self.softmax(
         self.in_project_slice(x_mid) / torch.clamp(self.temperature, min=0.1, max=5))  # B H N G
     -> "logits"
@@ -126,18 +127,73 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
           -> a = torch.tensor([-1.0, 0.2, 10.0])
           -> torch.clamp(a, min=0.0, max=1.0)  # -> tensor([0.0, 0.2, 1.0])
 
-    slice_norm = slice_weights.sum(2)  # B H G
+    slice_norm = slice_weights.sum(2) # B H G
     logging.info(f"{R} slice 1 value: {slice_norm[0, 1, 1]} {RESET}")
     -> The slice 1 value is 113
        -> 113/7225 = 0.0156
        -> On average, each point contributes 0.0156 probalility to slice 1
-
-    #!------------------------- Not sure-------------------------------
-    -> The whole slice for one batech sample one head should be around 1
+    -> The whole slice value take summation for one batech sample one head should be around 1
 
 #!---------------------
     slice_token = torch.einsum("bhnc,bhng->bhgc", fx_mid, slice_weights)
-    ->
+    -> It is an equation performs a weighted sum over the whole mesh point dimension "N"
+    -> slice_token.shape = [B, H, G, C]
+
+#!---------------------
+    slice_token = slice_token / ((slice_norm + 1e-5)[:, :, :, None].repeat(1, 1, 1, self.dim_head))
+    -> slice_norm + 1e-5
+       -> Add a tiny epsilon "1e-5" for numerical stability
+    -> (slice_norm + 1e-5)[:, :, :, None]
+       -> "None" add a dimension for slice_norm
+
+#!--------------------- ###(2) Attention among slice tokens
+    q_slice_token = self.to_q(slice_token)
+    k_slice_token = self.to_k(slice_token)
+    v_slice_token = self.to_v(slice_token)
+    -> Query, Key, Value
+        -> Projects slice tokens from "slice_token" into the "Query" vector for each attention head
+        -> Projects slice tokens from "slice_token" into the "Key" vector for each attention head
+        -> Projects slice tokens from "slice_token" into the "Value" vector for each attention head
+    -> Each of these is a trainable linear layer, without bias
+
+#!---------------------
+    Final formula
+    "$Attention(Q,K,V)=softmax\left( \frac{QK^T}{\sqrt{ d }} \right)V$"
+
+    dots = torch.matmul(q_slice_token, k_slice_token.transpose(-1, -2)) * self.scale
+    -> Each batch, each head, take dot
+    -> k_slice_token.transpose(-1, -2)
+       -> [B, H, G, D] * [B, H, D, G] = [B, H, G, G]
+
+#!---------------------
+    -> attn = self.softmax(dots)
+       -> atten[B, H, i, j] How much slice 'i' attends to slice 'j'
+
+#!---------------------
+    -> out_slice_token = torch.matmul(attn, v_slice_token)  # B H G D
+       -> For each slice '1', the model gathers informatioon from other slice 'j', weighted by the learned scores
+
+ #!-------------------- ### (3) Deslice
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #!--------------------------------------------
     """ Usage situation for nn.conv2d and nn.Linear """
