@@ -118,12 +118,8 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
                     .permute(0, 2, 1, 3).contiguous()  # B H N G
         slice_weights = self.softmax(
             self.in_project_slice(x_mid) / torch.clamp(self.temperature, min=0.1, max=5))  # B H N G
-        logging.info(f"{G} slice_weights: {slice_weights.shape} {RESET}")
         slice_norm = slice_weights.sum(2)  # B H G
-        logging.info(f"{Y} slice_weights sum over all points: {slice_norm.shape} {RESET}")
-        logging.info(f"{R} slice 1 value: {slice_norm[0, 1, 1]} {RESET}")
-        slice_sum = slice_norm.sum(-1)
-        logging.info(f"{R} batch 0,  head 1: {slice_norm[0, 1]} {RESET}")
+
         slice_token = torch.einsum("bhnc,bhng->bhgc", fx_mid, slice_weights)
         slice_token = slice_token / ((slice_norm + 1e-5)[:, :, :, None].repeat(1, 1, 1, self.dim_head))
 
@@ -135,10 +131,15 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
         attn = self.softmax(dots)
         attn = self.dropout(attn)
         out_slice_token = torch.matmul(attn, v_slice_token)  # B H G D
+        logging.info(f"{Y} out_slice_token.shape: {out_slice_token.shape} {RESET}")
+        logging.info(f"{Y} slice_weights.shape: {slice_weights.shape} {RESET}")
+
 
         ### (3) Deslice
         out_x = torch.einsum("bhgc,bhng->bhnc", out_slice_token, slice_weights)
+        logging.info(f"{Y} out_x.shape: {out_x.shape} {RESET}")
         out_x = rearrange(out_x, 'b h n d -> b n (h d)')
+        logging.info(f"{Y} out_x.shape: {out_x.shape} {RESET}")
         return self.to_out(out_x)
 
 
