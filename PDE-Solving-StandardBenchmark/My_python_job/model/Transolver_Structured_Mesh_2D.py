@@ -30,8 +30,8 @@ class MLP(nn.Module):
         else:
             raise NotImplementedError
         self.n_input = n_input
-        self.n_hidden = n_hidden
-        self.n_output = n_output
+        self.n_hidden = n_hidden # 256
+        self.n_output = n_output # 128
         self.n_layers = n_layers
         self.res = res
         self.linear_pre = nn.Sequential(nn.Linear(n_input, n_hidden), act())
@@ -39,18 +39,13 @@ class MLP(nn.Module):
         self.linears = nn.ModuleList([nn.Sequential(nn.Linear(n_hidden, n_hidden), act()) for _ in range(n_layers)])
 
     def forward(self, x):
-      #  logging.info(f"{G} raw x.shape {x.shape}{RESET}")
         x = self.linear_pre(x)
-      #  logging.info(f"{G} Intermediate  x.shape {x.shape}{RESET}")
-
-      #  logging.info(f"{G}************In forwar(){RESET}")
         for i in range(self.n_layers):
             if self.res:
                 x = self.linears[i](x) + x
             else:
                 x = self.linears[i](x)
         x = self.linear_post(x)
-      #  logging.info(f"{G}  Output x.shape {x.shape}{RESET}")
         return x
 
 
@@ -189,7 +184,6 @@ class Model(nn.Module):
         return pos
 
     def forward(self, x, fx, T=None):
-        logging.info(f"{Y} Initial input x.shape: {x.shape} {RESET}")
         if self.unified_pos:
             x = self.pos.repeat(x.shape[0], 1, 1, 1).reshape(x.shape[0], self.H * self.W, self.ref * self.ref)
         if fx is not None:
