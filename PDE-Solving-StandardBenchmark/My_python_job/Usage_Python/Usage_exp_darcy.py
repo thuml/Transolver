@@ -11,6 +11,15 @@ def main():
     train_data = scio.loadmat(train_path)
     -> Load the .mat file
 
+#!------------------------ How to checkout a black .mat life
+    import scipy.io as scio
+    train_data = scio.loadmat(train_path)
+    logging.info(f"{M} trian_data: {train_data.keys()} {RESET}")
+    logging.info(f"{M} coeff value at point [i, 1, 1]: {tmp_3[1, 1, 1]} {RESET}")
+    -> The last two slot is the postion index
+    -> It is "2D" geometry !!!
+
+
 #!------------------------
     x_train = train_data['coeff'][:ntrain, ::r, ::r][:, :s, :s]
     -> x_train.shape = (1024, 421, 421)
@@ -107,6 +116,11 @@ def main():
        -> Shuffle the dataset at the beginning of every epoch
        -> Ensure the model does not see samples in the same order every time
 
+#!------------------------
+    for x, fx, y in tqdm(train_loader, desc="[Training]"):
+    -> x  is pos_train, stands for mesh points
+    -> fx is x_train, the physical value, e.g. Pressure
+    -> y  is y_train
 
 
 
