@@ -81,12 +81,6 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
         self.temperature = nn.Parameter(torch.ones([1, heads, 1, 1]) * 0.5)
         self.H = H
         self.W = W
-        logging.info(f"{Y} self.dim: {self.dim}")
-        logging.info(f"{Y} self.dim_head: {self.dim_head}")
-        logging.info(f"{Y} self.heads: {self.heads}")
-        logging.info(f"{Y} self.H: {self.H}")
-        logging.info(f"{Y} self.W: {self.W}{RESET}")
-        logging.info(f"{Y} self.slice_num: {slice_num}{RESET}")
 
         self.in_project_x = nn.Conv2d(dim, inner_dim, kernel, 1, kernel // 2)
         self.in_project_fx = nn.Conv2d(dim, inner_dim, kernel, 1, kernel // 2)
