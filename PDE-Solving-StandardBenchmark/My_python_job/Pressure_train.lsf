@@ -1,7 +1,7 @@
 #!/bin/bash
 #BSUB -J DrivAerNet_Pressure_GPU      # Job name
 #BSUB -n 1                            # Number of CPU cores
-#BSUB -q  2v100-16-sc            # Queue name (change if needed)
+#BSUB -q  2a100-40                    # Queue name (change if needed)
 #BSUB -R "span[ptile=1]"
 #BSUB -gpu "num=1"
 #BSUB -oo logs/out_%J.log             # Standard output (%J = job ID)
