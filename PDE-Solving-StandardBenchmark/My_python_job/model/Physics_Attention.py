@@ -114,8 +114,9 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
             self.in_project_slice(x_mid) / torch.clamp(self.temperature, min=0.1, max=5))  # B H N G
         slice_norm = slice_weights.sum(2)  # B H G
 
-        slice_token = torch.einsum("bhnc,bhng->bhgc", fx_mid, slice_weights)
+        slice_token = torch.einsum("bhnc,bhng->bhgc", fx_mid, slice_weights) # B H G C
         slice_token = slice_token / ((slice_norm + 1e-5)[:, :, :, None].repeat(1, 1, 1, self.dim_head))
+        logging.info(f"{Y} slice_token value at slice 1 feature: {slice_token[0,0,1,:]} {RESET}")
 
         ### (2) Attention among slice tokens
         q_slice_token = self.to_q(slice_token)
