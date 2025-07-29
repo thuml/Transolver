@@ -73,7 +73,7 @@ class Transolver_block(nn.Module):
                                                          dropout=dropout, slice_num=slice_num, H=H, W=W)
 
         self.ln_2 = nn.LayerNorm(hidden_dim)
-`       self.mlp = MLP(hidden_dim, hidden_dim * mlp_ratio, hidden_dim, n_layers=0, res=False, act=act)
+        self.mlp = MLP(hidden_dim, hidden_dim * mlp_ratio, hidden_dim, n_layers=0, res=False, act=act)
         if self.last_layer:
             self.ln_3 = nn.LayerNorm(hidden_dim)
             self.mlp2 = nn.Linear(hidden_dim, out_dim)
