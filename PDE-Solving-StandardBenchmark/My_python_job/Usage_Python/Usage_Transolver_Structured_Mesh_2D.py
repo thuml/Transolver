@@ -71,7 +71,10 @@ class Model(nn.Module):
        -> fx[0, 0, 64]
           -> At batch 0, the pressure value at mesh grid point "0"
 
-
+#!---------------------
+    for block in self.blocks:
+        fx = block(fx)
+    -> Each block is a model instance for Transolver_block
 
 
 
@@ -116,6 +119,20 @@ class MLP(nn.Module):
 # self.ref:                           reference grid points
 # num_head:
 
-""" Transolver_block() passing arguments meaning """
-# num_heads
 
+#!-----------------------------------------------------------------------
+class Transolver_block(nn.Module):
+""" Transolver_block() passing arguments meaning """
+#!--------------------------------------------
+    def __init__():
+        self.ln_1 = nn.LayerNorm(hidden_dim)
+        -> Normalize each sample across the feature dimension
+
+#!--------------------------------------------
+    def forward(self, fx):
+#!---------------------
+    fx = self.Attn(self.ln_1(fx)) + fx
+    -> fx = ** + fx
+       -> Ensures gradient flow
+       -> Retains identity mapping
+       -> Preserve input info
