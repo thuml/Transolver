@@ -3,7 +3,7 @@ python exp_darcy.py \
 --model Transolver_Structured_Mesh_2D \
 --n-hidden 128 \
 --n-heads 8 \
---n-layers 8 \
+--n-layers 1 \
 --lr 0.001 \
 --max_grad_norm 0.1 \
 --batch-size 4 \
