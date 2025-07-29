@@ -136,11 +136,13 @@ class Physics_Attention_Structured_Mesh_2D(nn.Module):
 
 #!---------------------
     slice_token = torch.einsum("bhnc,bhng->bhgc", fx_mid, slice_weights)
+    -> This is "s_j" in paper "2024Transolver"
     -> It is an equation performs a weighted sum over the whole mesh point dimension "N"
     -> slice_token.shape = [B, H, G, C]
 
 #!---------------------
     slice_token = slice_token / ((slice_norm + 1e-5)[:, :, :, None].repeat(1, 1, 1, self.dim_head))
+    -> This is "z_j" in paper "2024Transolver"
     -> slice_norm + 1e-5
        -> Add a tiny epsilon "1e-5" for numerical stability
     -> (slice_norm + 1e-5)[:, :, :, None]
