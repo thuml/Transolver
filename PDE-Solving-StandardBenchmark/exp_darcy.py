@@ -11,6 +11,20 @@ from model_dict import get_model
 from utils.normalizer import UnitTransformer
 import matplotlib.pyplot as plt
 
+import logging
+import pprint
+from utils_Dri import setup_logger
+from datetime import datetime
+from colorama import Fore, Style
+
+#! alias for colorful output
+R = Fore.RED
+Y = Fore.YELLOW
+G = Fore.GREEN
+M = Fore.MAGENTA
+C = Fore.CYAN
+RESET = Style.RESET_ALL
+
 parser = argparse.ArgumentParser('Training Transolver')
 
 parser.add_argument('--lr', type=float, default=1e-3)
@@ -32,7 +46,7 @@ parser.add_argument('--ref', type=int, default=8)
 parser.add_argument('--slice_num', type=int, default=32)
 parser.add_argument('--eval', type=int, default=0)
 parser.add_argument('--save_name', type=str, default='darcy_Transolver')
-parser.add_argument('--data_path', type=str, default='/data/fno')
+parser.add_argument('--data_path', type=str, default='/work/mae-zhangbj/Data_store/Data_Pressure_Darcy/')
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -69,6 +83,16 @@ def central_diff(x: torch.Tensor, h, resolution):
 
 
 def main():
+    # Set up logging
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    exp_name = "Tran Test"
+    log_dir = os.path.join("logs", exp_name)
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, f"pipeline_{timestamp}.log")
+    setup_logger(log_file)
+    logging.info(f"{Fore.RED}*************************Benchmark: Start pressure prediction in Darcy flow.{Style.RESET_ALL}")
+
+    # Set up arguments
     r = args.downsample
     h = int(((421 - 1) / r) + 1)
     s = h
@@ -131,9 +155,10 @@ def main():
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
-    print(args)
-    print(model)
-    count_parameters(model)
+    logging.info(f"{G} Arguments:\n{RESET}" + pprint.pformat(vars(args), indent=2) )
+   # print(args)
+   # print(model)
+   # count_parameters(model)
 
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=args.lr, epochs=epochs,
                                                     steps_per_epoch=len(train_loader))
@@ -142,8 +167,10 @@ def main():
     de_y = TestLoss(size_average=False)
 
     if eval:
-        print("model evaluation")
-        print(s, s)
+        logging.info(f"model evaluation")
+        logging.info(f"s: {s}, s: {s}")
+        #print("model evaluation")
+        #print(s, s)
         model.load_state_dict(torch.load("./checkpoints/" + save_name + ".pt"), strict=False)
         model.eval()
         showcase = 10
@@ -164,7 +191,8 @@ def main():
                     rel_err += tl
 
                     if id < showcase:
-                        print(id)
+                        logging.info(f"id: {id}")
+                       # print(id)
                         plt.figure()
                         plt.axis('off')
                         plt.imshow(out[0, :].reshape(85, 85).detach().cpu().numpy(), cmap='coolwarm')
@@ -200,13 +228,14 @@ def main():
                         plt.close()
 
             rel_err /= ntest
-            print("rel_err:{}".format(rel_err))
+            logging.info(f"rel_err:{rel_err}")
+            # print("rel_err:{}".format(rel_err))
     else:
         for ep in range(args.epochs):
             model.train()
             train_loss = 0
             reg = 0
-            for x, fx, y in train_loader:
+            for x, fx, y in tqdm(train_loader, desc="[Training]"):
                 x, fx, y = x.cuda(), fx.cuda(), y.cuda()
                 optimizer.zero_grad()
 
@@ -235,7 +264,7 @@ def main():
 
             train_loss /= ntrain
             reg /= ntrain
-            print("Epoch {} Reg : {:.5f} Train loss : {:.5f}".format(ep, reg, train_loss))
+            logging.info(f"{M} Epoch {ep}  Reg : {reg}  Train loss : {train_loss} {RESET}")
 
             model.eval()
             rel_err = 0.0
@@ -254,17 +283,20 @@ def main():
                     rel_err += tl
 
             rel_err /= ntest
-            print("rel_err:{}".format(rel_err))
+            logging.info(f"{M} rel_err: {rel_err} {RESET}")
+            # print("rel_err:{}".format(rel_err))
 
             if ep % 100 == 0:
                 if not os.path.exists('./checkpoints'):
                     os.makedirs('./checkpoints')
-                print('save model')
+                logging.info(f"{R} 'save model' {RESET}")
+               # print('save model')
                 torch.save(model.state_dict(), os.path.join('./checkpoints', save_name + '.pt'))
 
         if not os.path.exists('./checkpoints'):
             os.makedirs('./checkpoints')
-        print('save model')
+       # print('save model')
+        logging.info(f"{R} 'save model' {RESET}")
         torch.save(model.state_dict(), os.path.join('./checkpoints', save_name + '.pt'))
 
 
