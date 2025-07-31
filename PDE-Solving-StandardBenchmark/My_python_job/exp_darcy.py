@@ -151,6 +151,7 @@ def main():
     test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(pos_test, x_test, y_test),
                                               batch_size=args.batch_size, shuffle=False)
 
+
     # Create the Transolver model
     model = get_model(args).Model(space_dim=2,
                                   n_layers=args.n_layers,
@@ -213,6 +214,38 @@ def main():
         reg /= ntrain
 
         logging.info(f"{M} Epoch {ep}  Reg : {reg}  Train loss : {train_loss} {RESET}")
+
+        model.eval()
+        rel_err = 0.0
+        id = 0
+        with torch.no_grad():
+            for x, fx, y in test_loader:
+                id += 1
+                if id == 2:
+                    vis = True
+                else:
+                    vis = False
+                x, fx, y = x.cuda(), fx.cuda(), y.cuda()
+                out = model(x, fx=fx.unsqueeze(-1)).squeeze(-1)
+                out = y_normalizer.decode(out)
+                tl = myloss(out, y).item()
+                rel_err += tl
+
+        rel_err /= ntest
+        #print("rel_err:{}".format(rel_err))
+        logging.info(f"{M} rel_err: {rel_err} {RESET}")
+
+        if ep % 100 == 0:
+            if not os.path.exists('./checkpoints'):
+                os.makedirs('./checkpoints')
+            logging.info(f"{R} 'save model' {RESET}")
+            torch.save(model.state_dict(), os.path.join('./checkpoints', save_name + '.pt'))
+
+    if not os.path.exists('./checkpoints'):
+        os.makedirs('./checkpoints')
+    logging.info(f"{R} 'save model' {RESET}")
+    torch.save(model.state_dict(), os.path.join('./checkpoints', save_name + '.pt'))
+
 
     # END
     logging.info(f"{Fore.RED}*******************************************The train is Done.{Style.RESET_ALL}")
