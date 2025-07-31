@@ -1,5 +1,5 @@
 python exp_darcy.py \
---gpu 4 \
+--gpu 0 \
 --model Transolver_Structured_Mesh_2D \
 --n-hidden 128 \
 --n-heads 8 \
@@ -10,7 +10,7 @@ python exp_darcy.py \
 --slice_num 64 \
 --unified_pos 1 \
 --ref 8 \
---eval 0 \
+--eval 1 \
 --downsample 5 \
+--epochs 100 \
 --save_name darcy_UniPDE
-
