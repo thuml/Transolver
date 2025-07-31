@@ -122,7 +122,23 @@ def main():
     -> fx is x_train, the physical value, e.g. Pressure
     -> y  is y_train
 
+#!------------------------
+    out = out[..., 1:-1, 1:-1].contiguous()
+    -> Prepare for central difference method
+       -> out.shape = [b c h w]
+       -> In 'h-dimension' remove the first and last row
+       -> In 'w-dimension' remove the first and lats row
 
+#!------------------------
+    out = F.pad(out, (1, 1, 1, 1), "constant", 0)
+    -> add a specified value to the "tensor" out
+    -> pad = [left, right, top, bottom]
+       -> (1, 1, 1, 1)
+       -> Pad 1 column on the left
+       -> ...
+    -> Example:
+       -> Before pad, out.shape = [2, 3, 4, 4]
+       -> After pad,  out.shape = [2, 3, 6, 6]
 
 
 
