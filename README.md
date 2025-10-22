@@ -72,6 +72,8 @@ Transolver achieves consistent state-of-the-art in **six standard benchmarks and
 <b>Figure 3.</b> Comparison of Transolver and other models.
 </p>
 
+- Application of Transolver for crash dynamics modeling: [https://arxiv.org/pdf/2510.15201](https://arxiv.org/pdf/2510.15201)
+
 ## Citation
 
 If you find this repo useful, please cite our paper. 
