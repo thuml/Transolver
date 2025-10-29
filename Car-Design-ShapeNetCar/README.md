@@ -31,6 +31,8 @@ Note: You need to install [pytorch_geometric](https://github.com/pyg-team/pytorc
 
 The raw data can be found [[here]](http://www.nobuyuki-umetani.com/publication/mlcfd_data.zip), which is provided by [Nobuyuki Umetani](https://dl.acm.org/doi/abs/10.1145/3197517.3201325).
 
+If you find the download button does not work, please directly try this link: http://www.nobuyuki-umetani.com/publication/mlcfd_data.zip
+
 3. Train and evaluate model. We provide the experiment scripts under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
 
 ```bash
