@@ -59,6 +59,7 @@ class Physics_Attention_Irregular_Mesh(nn.Module):
 
 class Physics_Attention_Structured_Mesh_2D(nn.Module):
     ## for structured mesh in 2D space
+    # dim = 128
     def __init__(self, dim, heads=8, dim_head=64, dropout=0., slice_num=64, H=101, W=31, kernel=3):  # kernel=3):
         super().__init__()
         inner_dim = dim_head * heads
