@@ -1,5 +1,7 @@
 # Transolver (ICML 2024 Spotlight)
 
+:triangular_flag_on_post:**News** (2026.02) We present a new member of the Transolver Family, named [Transolver-3](https://arxiv.org/pdf/2602.04940), which can handle **100-million-scale** geometries with SOTA results in full-size DrivAerML.
+
 :triangular_flag_on_post:**News** (2025.07) We have released the code of [Transolver++](https://arxiv.org/abs/2502.02414v1). Please check this [GitHub Repository](https://github.com/thuml/Transolver_plus).
 
 :triangular_flag_on_post:**News** (2025.04) We have released [Neural-Solver-Library](https://github.com/thuml/Neural-Solver-Library) as a simple and neat code base for PDE solving. It contains 17 well-reproduced neural solvers. Welcome to try this library and join the research in solving PDEs.
