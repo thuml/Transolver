@@ -329,14 +329,14 @@ def main(device, train_dataset, val_dataset, Net, hparams, path, criterion='MSE'
                         'nb_parameters': params_model,
                         'time_elapsed': time_elapsed,
                         'hparams': hparams,
-                        'train_loss_surf': train_loss_surf_list[-1],
-                        'train_loss_surf_var': loss_surf_var_list[-1],
-                        'train_loss_vol': train_loss_vol_list[-1],
-                        'train_loss_vol_var': loss_vol_var_list[-1],
-                        'val_loss_surf': val_surf_list[-1],
-                        'val_loss_surf_var': val_surf_var_list[-1],
-                        'val_loss_vol': val_vol_list[-1],
-                        'val_loss_vol_var': val_vol_var_list[-1],
+                        'train_loss_surf': str(train_loss_surf_list[-1]),
+                        'train_loss_surf_var': str(loss_surf_var_list[-1]),
+                        'train_loss_vol': str(train_loss_vol_list[-1]),
+                        'train_loss_vol_var': str(loss_vol_var_list[-1]),
+                        'val_loss_surf': str(val_surf_list[-1]),
+                        'val_loss_surf_var': str(val_surf_var_list[-1]),
+                        'val_loss_vol': str(val_vol_list[-1]),
+                        'val_loss_vol_var': str(val_vol_var_list[-1]),
                     }, f, indent=12, cls=NumpyEncoder
                 )
 
